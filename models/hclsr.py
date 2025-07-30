@@ -70,10 +70,6 @@ class HCLSRModel(nn.Module):
         self.mlp1 = MLP(self.embedding_dim, self.embedding_dim*self.k, self.embedding_dim//2, self.embedding_dim*self.k)
         self.meta_netu = nn.Linear(self.embedding_dim*3, self.embedding_dim, bias=False)
 
-        # # contrastive negative sampling
-        # self.user_social = 5000
-        # self.user_SVD = 5000
-        # self.item_SVD = 5000
 
 
 
@@ -117,19 +113,18 @@ class HCLSRModel(nn.Module):
         user_item_tensor = self.sparse_mx_to_torch_sparse_tensor(user_item_mat_coo).to('cuda')
         uneighbor = torch.matmul(user_item_tensor, targetembedi)
 
-        # Meta-knowlege extraction 公式（5）
-        tembedu = (self.meta_netu(torch.cat((auxiembedu, targetembedu, uneighbor), dim=1).detach()))
+        # Meta-knowlege extraction
+        tembedu =
 
         """ Personalized transformation parameter matrix """
         # Low rank matrix decomposition
-        metau1 = self.mlp(tembedu).reshape(-1, self.embedding_dim, self.k)  # d*k
-        metau2 = self.mlp1(tembedu).reshape(-1, self.k, self.embedding_dim)  # k*d
+        metau1 =
+        metau2 =
         meta_biasu1 = (torch.mean(metau1, dim=0))
         meta_biasu2 = (torch.mean(metau2, dim=0))
         low_weightu1 = F.softmax(metau1 + meta_biasu1, dim=1)
         low_weightu2 = F.softmax(metau2 + meta_biasu2, dim=1)
-        # low_weightu1 = metau1 + meta_biasu1
-        # low_weightu2 = metau2 + meta_biasu2
+
 
         # The learned matrix as the weights of the transformed network
         tembedus = (torch.sum(torch.multiply((auxiembedu).unsqueeze(-1), low_weightu1), dim=1))
@@ -157,10 +152,9 @@ class HCLSRModel(nn.Module):
         graph = torch.mean(edge_embeddings, 0)
         pos = score(user_embeddings, graph)
         neg1 = score(row_column_shuffle(user_embeddings), graph)
-        # pos = self.manifold.sqdist(user_embeddings, graph, self.c)
-        # neg1 = self.manifold.sqdist(row_column_shuffle(user_embeddings), graph, self.c)
+
         global_loss = torch.sum(-torch.log(torch.sigmoid(pos-neg1)))
-        # global_loss = torch.sum(-torch.log(torch.sigmoid(neg1 - pos)))
+
         return global_loss*0.05
 
     def random_select(self, tensor, k):
@@ -188,7 +182,7 @@ class HCLSRModel(nn.Module):
         # index = self.random_select(index, self.user_social)
         embeddings1 = data1[index]
         embeddings2 = data2[index]
-        dist_matrix = self.manifold.dist(embeddings1.unsqueeze(1), embeddings2.unsqueeze(0), self.c)
+        dist_matrix =
         sim_matrix = torch.squeeze(dist_matrix, dim=2)
         sim_matrix = torch.exp(-sim_matrix / ssl_temp)
         pos_sim = sim_matrix[range(len(index)), range(len(index))]
@@ -208,7 +202,7 @@ class HCLSRModel(nn.Module):
         # index = self.random_select(index, self.user_SVD)
         embeddings1 = emb[index]
         embeddings2 = emb_SVD[index]
-        dist_matrix = self.manifold.dist(embeddings1.unsqueeze(1), embeddings2.unsqueeze(0), self.c)
+        dist_matrix =
         sim_matrix = torch.squeeze(dist_matrix, dim=2)
         sim_matrix = torch.exp(-sim_matrix / ssl_temp)
         pos_sim = sim_matrix[range(len(index)), range(len(index))]
@@ -228,7 +222,7 @@ class HCLSRModel(nn.Module):
         # index = self.random_select(index, self.item_SVD)
         embeddings1 = emb[index]
         embeddings2 = emb_SVD[index]
-        dist_matrix = self.manifold.dist(embeddings1.unsqueeze(1), embeddings2.unsqueeze(0), self.c)
+        dist_matrix =
         sim_matrix = torch.squeeze(dist_matrix, dim=2)
         sim_matrix = torch.exp(-sim_matrix / ssl_temp)
         pos_sim = sim_matrix[range(len(index)), range(len(index))]
@@ -252,11 +246,11 @@ class HCLSRModel(nn.Module):
         svd_users = svd_users.to('cuda')
         svd_items = svd_items.to('cuda')
 
-        # 步骤2
+
         x = self.manifold.proj(self.embedding.weight, self.c)
         x_tangent = self.manifold.logmap0(x, self.c)
 
-        # 步骤3
+
         user_emb, item_emb = torch.split(x_tangent, [self.num_users, self.num_items])
         user_uuo_emb = self.gating_user(user_emb)
         uio_emb_temp = x_tangent
@@ -267,12 +261,12 @@ class HCLSRModel(nn.Module):
         uio_emb_temp_SVD = x_tangent
         all_ui_embeddings_SVD = [x_tangent]
 
-        # 步骤4
+
         for i in range(self.num_layers):
             ui_emb0 = torch.spmm(adj_uv, uio_emb_temp)
             uu_emb0 = torch.spmm(adj_trust, user_uuo_emb_temp)
 
-            # 用于SVD增强卷积
+
             u_emb_temp_SVD, i_emb_temp_SVD = torch.split(uio_emb_temp_SVD, [self.num_users, self.num_items])
             vt_ei = svd_items @ i_emb_temp_SVD
             ut_eu = svd_users @ u_emb_temp_SVD
@@ -289,19 +283,19 @@ class HCLSRModel(nn.Module):
             all_user_embeddings.append(user_uuo_emb_temp)
             all_ui_embeddings_SVD.append(uio_emb_temp_SVD)
 
-        # 步骤5
+
         user_Embedding_aux = sum(all_user_embeddings[1:])
         ui_Embedding = sum(all_ui_embeddings[1:])
         user_Embedding, item_Embedding = torch.split(ui_Embedding, [self.num_users, self.num_items])
 
         ui_Embedding_SVD = sum(all_ui_embeddings_SVD[1:])
 
-        # 个性化knowledge transfer
+
         meta_user_emb = self.metafortansform(user_Embedding_aux, user_Embedding, item_Embedding, user_item_mat)
         user_Embedding = self.alpha * user_Embedding + (1 - self.alpha) * (meta_user_emb + user_Embedding_aux)
         user_item_embedding = torch.cat([user_Embedding, item_Embedding], 0)
 
-        # 步骤6
+
         user_item_embedding = self.manifold.expmap0(user_item_embedding, self.c)
         user_item_embedding = self.manifold.proj(user_item_embedding, self.c)
         uu_social_embedding = self.manifold.expmap0(meta_user_emb + user_Embedding_aux, self.c)
