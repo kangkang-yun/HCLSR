@@ -97,7 +97,7 @@ class Hyperboloid(Manifold):
         res[:, 1:] = sqrtK * sinh(theta) * x / x_norm
         return self.proj(res, c)
 
-    def logmap0(self, x, c):                                    # 公式（6）   这是特例，因为取点o=[-1,...,0,0]
+    def logmap0(self, x, c):                                    # 公式（6）
         K = 1. / c
         sqrtK = K ** 0.5
         d = x.size(-1) - 1
