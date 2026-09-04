@@ -6,13 +6,13 @@ Run from the project root, using a new `--runid` to avoid overwriting existing r
 
 ```bash
 # Ciao
-python run_hgsr.py --dataset ciao --runid [new_id] --embedding_dim 64 --lr 0.003 --epochs 1000 --weight_decay 0.005 --num_layers 3 --negative_sampling random --interest_weight 0.8
+python run_hclsr.py --dataset ciao --runid [new_id] --embedding_dim 64 --lr 0.003 --epochs 1000 --weight_decay 0.005 --num_layers 3 --negative_sampling random --interest_weight 0.8
 
 # Epinions
-python run_hgsr.py --dataset epinions --runid [new_id] --embedding_dim 64 --lr 0.003 --epochs 1000 --weight_decay 0.005 --num_layers 3 --negative_sampling random --interest_weight 0.8
+python run_hclsr.py --dataset epinions --runid [new_id] --embedding_dim 64 --lr 0.003 --epochs 1000 --weight_decay 0.005 --num_layers 3 --negative_sampling random --interest_weight 0.8
 
 # Yelp
-python run_hgsr.py --dataset yelp --runid [new_id] --embedding_dim 64 --lr 0.003 --epochs 1000 --weight_decay 0.005 --num_layers 2 --negative_sampling random --interest_weight 0.8
+python run_hclsr.py --dataset yelp --runid [new_id] --embedding_dim 64 --lr 0.003 --epochs 1000 --weight_decay 0.005 --num_layers 2 --negative_sampling random --interest_weight 0.8
 ```
 
 Checkpoints and logs are saved under `saved/<dataset>/<runid>/`.
